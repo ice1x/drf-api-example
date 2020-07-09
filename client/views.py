@@ -24,11 +24,18 @@ class PostsView(generics.ListAPIView):
     def get(self, request, order=None):
 
         order = request.GET.get('order', '')
-        print(f"order: {order}")
+        offset = int(request.GET.get('offset', 0))
+        limit = request.GET.get('limit')
+        if limit:
+            limit = int(limit)
+        if limit and limit < 0:
+            limit = None
+        if limit and offset:
+            limit += offset
         posts = Posts.objects.all()
 
         if order:
-            posts = posts.order_by(order)
+            posts = posts.order_by(order)[offset:limit]
 
         serializer = PostsSerializer(posts, many=True)
         return Response(serializer.data)
